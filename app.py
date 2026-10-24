@@ -413,7 +413,7 @@ def render_skill_pills(skills, matched: bool):
 st.markdown(
     """
     <div class="hero">
-        <h1>📄 Smart Resume Screening &amp; Candidate Ranking Tool</h1>
+        <h1>📄 AI-Based Resume Screening and Candidate Shortlisting System</h1>
         <p>
             Automatically analyze and rank multiple resumes against a job description using
             AI, semantic embeddings, Gemini-powered profile extraction, evidence-based skill
