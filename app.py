@@ -297,6 +297,34 @@ st.markdown(
         font-weight: 700;
     }
 
+    /* Animated Analyze Resumes loading state */
+    .analyzing-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 0.8rem 1.5rem;
+        background: #E7F3ED;
+        color: #17402E;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #B7D8C7;
+        border-top-color: #2D6A4F;
+        border-radius: 50%;
+        animation: resume-spin 0.8s linear infinite;
+        flex-shrink: 0;
+    }
+    @keyframes resume-spin {
+        to { transform: rotate(360deg); }
+    }
+
     .score-row {
         margin-bottom: 0.85rem;
     }
@@ -354,10 +382,10 @@ def section_header(icon: str, title: str):
 
 def decision_style(decision: str):
     mapping = {
-        "Interview": ("var(--success)", "var(--success-bg)"),
-        "Consider": ("var(--accent)", "var(--accent-light)"),
-        "Review": ("var(--warn)", "var(--warn-bg)"),
-        "Low Match": ("var(--danger)", "var(--danger-bg)"),
+        "Interview": ("#2D6A4F", "#E7F3ED"),  # Green
+        "Consider": ("#2563EB", "#DBEAFE"),  # Blue
+        "Review": ("#92700C", "#FBF3D9"),    # Yellow
+        "Low Match": ("#B0281F", "#FBEAE8"), # Red
     }
     return mapping.get(decision, ("var(--text-secondary)", "#F0F1F4"))
 
@@ -556,9 +584,13 @@ with st.container(border=True):
 # Analyze Button
 # --------------------------------------------------
 
-analyze_button = st.button(
+# Keep a placeholder so the button can be replaced by a loading animation
+# immediately after it is clicked.
+analyze_button_placeholder = st.empty()
+analyze_button = analyze_button_placeholder.button(
     "🚀 Analyze Resumes",
     use_container_width=True,
+    key="analyze_resumes",
 )
 
 
@@ -607,7 +639,20 @@ if analyze_button or st.session_state.analysis_results:
         st.stop()
 
     if analyze_button:
-        with st.spinner("Analyzing resumes... Please wait."):
+        # Replace the clicked button with an animated status indicator.
+        analyze_button_placeholder.markdown(
+            """
+            <div class="analyzing-status">
+                <div class="loading-spinner"></div>
+                <span>Analyzing Resumes...</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        with st.spinner(
+            "Extracting candidate profiles and matching skills..."
+        ):
             results = analyzer.analyze_multiple_resumes(
                 job_description,
                 resumes,
@@ -620,7 +665,7 @@ if analyze_button or st.session_state.analysis_results:
             resume["name"]: resume["text"]
             for resume in resumes
         }
-        st.success("Analysis Completed Successfully!")
+        analyze_button_placeholder.success("✅ Analysis Completed Successfully!")
     else:
         results = st.session_state.analysis_results
 
